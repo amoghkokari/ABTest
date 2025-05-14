@@ -31,7 +31,6 @@ def main():
     if st.button("Submit"):
         if num_people and int(num_people):
             st.success("Sample population accepted!")
-        # Proceed with AB test logic
     else:
         st.error("Please enter a valid ")
 
@@ -56,19 +55,12 @@ def main():
     # Reset button to clear all session state variables
     if st.button("Reset Experiment"):
         # Reset all session state variables to None
-        if 'resp_content' not in st.session_state:
-            st.session_state.resp_content = None
-        if 'gen_email_campaign_a' not in st.session_state:
-            st.session_state.gen_email_campaign_a = None
-        if 'gen_email_campaign_b' not in st.session_state:
-            st.session_state.gen_email_campaign_b = None
-        if 'users_personas' not in st.session_state:
-            st.session_state.users_personas = None
-        if 'all_user_responses' not in st.session_state:
-            st.session_state.all_user_responses = None
-        if 'experiment_valuation' not in st.session_state:
-            st.session_state.experiment_valuation = None
-        st.write('Please refresh the page to start a new experiment !!')
+        st.session_state.resp_content = None
+        st.session_state.gen_email_campaign_a = None
+        st.session_state.gen_email_campaign_b = None
+        st.session_state.users_personas = None
+        st.session_state.all_user_responses = None
+        st.session_state.experiment_valuation = None
 
     # Text area for product description input
     product_input = st.text_area(label='Please enter product description: ', placeholder=product_description(), height=300)
