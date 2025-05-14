@@ -1,0 +1,13 @@
+.env
+abagentenv
+__pycache__
+agents.__pycache__
+agents.email_gen_agent.__pycache__
+agents.response_sim_agent.__pycache__
+agents.persona_gen_agent.__pycache__
+agents.exp_gen_agent.__pycache__
+df_email.csv
+df_personas.csv
+df_responses.csv
+AB_Test_Report.docx
+wandb
