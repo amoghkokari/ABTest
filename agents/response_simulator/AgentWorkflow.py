@@ -2,7 +2,7 @@ from prefect import task, get_run_logger
 from agno.agent import Agent, RunResponse
 from .resp_formatter import EmailResponse
 from agno.models.google import Gemini
-from .prompt import get_email_resp_prompt
+from .Prompt import get_email_resp_prompt
 from dotenv import load_dotenv
 from random import randint
 import os

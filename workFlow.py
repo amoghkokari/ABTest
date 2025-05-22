@@ -1,5 +1,5 @@
 from helper_func import display_email_campaigns, display_user_personas, display_user_responses, save_as_docx
-from agents.email_gen_agent.agent import generate_email_campaigns_for_experiment
+from agents.Email_Generator.agent import generate_email_campaigns_for_experiment
 from product_input import health_product_description as product_description
 from agents.response_sim_agent.agent_workflow import response_to_email
 from agents.response_evaluator_agent.agent import evaluate_experiment

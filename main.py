@@ -1,18 +1,14 @@
 from helper_func import display_email_campaigns, display_user_personas, display_user_responses, save_as_docx
-from agents.email_gen_agent.agent import generate_email_campaigns_for_experiment
-from agents.response_evaluator_agent.agent import evaluate_experiment
-from agents.response_sim_agent.agent import response_to_email
-from agents.persona_gen_agent.agent import generate_personas
-from agents.exp_gen_agent.agent import generate_experiments
+from agents.email_generator.Agent import generate_email_campaigns_for_experiment
+from agents.response_evaluator.Agent import evaluate_experiment
+from agents.response_simulator.Agent import response_to_email
+from agents.persona_generator.Agent import generate_personas
+from agents.experiment_generator.Agent import generate_experiments
+from llm_models.AgnoAgentModels import set_api_key
 from product_input import product_description
-from dotenv import load_dotenv
 import streamlit as st
 import time
-import os
 import io
-
-# Load environment variables from .env file
-load_dotenv()
 
 def main():
     """
@@ -33,10 +29,13 @@ def main():
             st.success("Sample population accepted!")
     else:
         st.error("Please enter a valid ")
-
+    
     # Input field for API key
     api_key = st.text_input('Enter Google Generative AI API KEY (Required)')
     st.link_button("Click to get API KEY (select create api key in new project)", "https://makersuite.google.com/app/apikey", type="secondary")
+
+    # Use provided API key or fetch from secrets and set it
+    api_key = set_api_key(api_key)
 
     # Initialize session state variables if they don't exist
     if 'resp_content' not in st.session_state:
@@ -69,13 +68,8 @@ def main():
     if not product_input:
         product_input = product_description()
 
-    # Use provided API key or fetch from environment variables
-    api_key = api_key if api_key else os.environ.get('GEMINI_API')
-
     # STEP 1: Generate AB Test Experiment
     if st.button("Generate AB test experiment") and api_key and num_people:
-        # Set API key in environment variables
-        os.environ["GEMINI_API"] = api_key
         
         # Show status during experiment generation
         with st.status(f"AB experiment creation started by AI agent", expanded=True) as status:
