@@ -1,10 +1,10 @@
 from agno.agent import RunResponse
-from general_agents.AgnoAgents import get_agno_agent
+from ..general_agents.AgnoAgents import get_agno_agent
 from .Prompt import get_persona_prompt
 from .ResponseFormatter import PersonaList
 
 
-def generate_personas(campaign_a, campaign_b, api_key, num_audience: int = 10):
+def generate_personas(campaign_a, campaign_b, num_audience: int, api_key):
 
     prompt = get_persona_prompt(campaign_a, campaign_b, num_audience)
     persona_agent = get_agno_agent(

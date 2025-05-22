@@ -1,5 +1,5 @@
 from agno.agent import RunResponse
-from general_agents.AgnoAgents import get_agno_agent
+from ..general_agents.AgnoAgents import get_agno_agent
 from .Prompt import get_email_resp_prompt
 from .ResponseFormatter import EmailResponse
 
@@ -23,9 +23,9 @@ def create_campaign_agent(user_persona, api_key):
 
   return campaign_agent
 
-def response_to_email(user, select_campaign: dict) -> dict:
+def response_to_email(user, select_campaign: dict, api_key) -> dict:
   
-  campaign_agent = create_campaign_agent(user)
+  campaign_agent = create_campaign_agent(user, api_key)
   campaign = select_campaign[user.campaign_varient]
 
   prompt = get_email_resp_prompt(campaign)

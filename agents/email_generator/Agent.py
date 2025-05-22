@@ -1,5 +1,5 @@
 from agno.agent import RunResponse
-from general_agents.AgnoAgents import get_agno_agent
+from ..general_agents.AgnoAgents import get_agno_agent
 from .Prompt import get_a_test_prompt, get_b_test_prompt
 from .ResponseFormatter import EmailCampaign
 
