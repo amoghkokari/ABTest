@@ -4,8 +4,6 @@ from streamlit import secrets
 
 # load_dotenv()
 
-# AIzaSyDolrFGbWlYwsc3PNkCPkY_5b8qpQqsg9I
-
 def set_api_key(api_key):
     
     api_key = api_key if api_key else secrets["GEMINI_API"] # replace with "os.environ.get('GEMINI_API')" to use .env
