@@ -1,9 +1,9 @@
 from helper_func import display_email_campaigns, display_user_personas, display_user_responses, save_as_docx
 from agents.email_generator.Agent import generate_email_campaigns_for_experiment
+from agents.experiment_generator.Agent import generate_experiments
 from agents.response_evaluator.Agent import evaluate_experiment
 from agents.response_simulator.Agent import response_to_email
 from agents.persona_generator.Agent import generate_personas
-from agents.experiment_generator.Agent import generate_experiments
 from llm_models.AgnoAgentModels import set_api_key
 from product_input import product_description
 import streamlit as st
@@ -134,20 +134,8 @@ def main():
         # Allow editing of email campaign details
         if st.session_state.gen_email_campaign_a and st.session_state.gen_email_campaign_b:
 
-            # Display other properties of campaign A
-            st.session_state.gen_email_campaign_a.subject
-            st.session_state.gen_email_campaign_a.body
-            st.session_state.gen_email_campaign_a.tone
-            st.session_state.gen_email_campaign_a.target_audience
-
             st.session_state.gen_email_campaign_a.variant = st.text_area("Edit campaign A agent response if needed:", 
                                                                          value=st.session_state.resp_content.experiment_guidelines)
-
-            # Display other properties of campaign B
-            st.session_state.gen_email_campaign_b.subject
-            st.session_state.gen_email_campaign_b.body
-            st.session_state.gen_email_campaign_b.tone
-            st.session_state.gen_email_campaign_b.target_audience
 
             st.session_state.gen_email_campaign_b.variant = st.text_area("Edit campaign B agent response if needed:", 
                                                                          value=st.session_state.resp_content.experiment_guidelines)

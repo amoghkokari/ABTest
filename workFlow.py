@@ -1,10 +1,11 @@
 from helper_func import display_email_campaigns, display_user_personas, display_user_responses, save_as_docx
-from agents.Email_Generator.agent import generate_email_campaigns_for_experiment
+from agents.email_generator.Agent import generate_email_campaigns_for_experiment
 from product_input import health_product_description as product_description
-from agents.response_sim_agent.agent_workflow import response_to_email
-from agents.response_evaluator_agent.agent import evaluate_experiment
-from agents.persona_gen_agent.agent import generate_personas
-from agents.exp_gen_agent.agent import generate_experiments
+from agents.experiment_generator.Agent import generate_experiments
+from agents.response_simulator.Agent import response_to_email
+from agents.response_evaluator.Agent import evaluate_experiment
+from agents.response_simulator.Agent import response_to_email
+from agents.persona_generator.Agent import generate_personas
 from prefect import task, flow, get_run_logger
 from argparse import ArgumentParser
 from dotenv import load_dotenv
@@ -14,6 +15,7 @@ import os
 
 # Load environment variables from .env file
 load_dotenv()
+api_key = os.environ.get('GEMINI_API')
 
 @task(name="Generate Experiments")
 def run_experiment_agent(num_experiments: int, product_description: str):
@@ -34,7 +36,7 @@ def run_experiment_agent(num_experiments: int, product_description: str):
     start_time = time.time()
     
     # Call the agent to generate experiments
-    experiments = generate_experiments(num_experiments, product_description)
+    experiments = generate_experiments(num_experiments, product_description, api_key)
     
     # Calculate duration
     duration = round(time.time() - start_time, 2)
@@ -62,7 +64,7 @@ def run_email_campaign_agent(experiments):
     logger = get_run_logger()
 
     # Generate two email campaigns (A and B) based on experiment design
-    email_campaign_a, email_campaign_b = generate_email_campaigns_for_experiment(experiments)
+    email_campaign_a, email_campaign_b = generate_email_campaigns_for_experiment(experiments, api_key)
 
     # Create dictionary for Campaign A for logging
     Campaign_A = {
@@ -88,7 +90,7 @@ def run_email_campaign_agent(experiments):
     # Log completion and campaign details to Prefect
     logger.info("✅ Email Campaign Agent completed.")
     logger.info(f"Generated campaigns for campaign a : {Campaign_A}")
-    logger.info(f"Generated campaigns for campaign b : {Campaign_B}")  # Fixed typo from "a" to "b"
+    logger.info(f"Generated campaigns for campaign b : {Campaign_B}")
 
     # Convert email campaigns to DataFrame and save to CSV
     df_email = display_email_campaigns(email_campaign_a, email_campaign_b)
@@ -114,7 +116,7 @@ def run_persona_agent(email_campaign_a, email_campaign_b, n_participants):
     logger = get_run_logger()
     
     # Generate personas based on target audiences of both campaigns
-    personas = generate_personas(email_campaign_a, email_campaign_b, n_participants)
+    personas = generate_personas(email_campaign_a, email_campaign_b, n_participants, api_key)
 
     # Log metrics to Weights & Biases
     wandb.log({"personas_generated": len(personas.personas)})
@@ -142,6 +144,67 @@ def run_persona_agent(email_campaign_a, email_campaign_b, n_participants):
     logger.info(f"personas df saved")
 
     return personas
+
+@task(name="Generate Individual Persona Response")
+def get_individual_response(user, nth_resp, selected_campaign, all_user_responses, total_time_elapsed, logger):
+
+    # Track time for each persona's response
+    start_time = time.time()
+    user_resp, _ = response_to_email(user, selected_campaign, api_key)
+    end_time = time.time()
+
+    all_user_responses.append(user_resp)
+
+    persona_resp_elapsed_time = round((end_time - start_time), 2)
+
+    # Log completion to Prefect
+    logger.info(f"Response recieved for persona {nth_resp+1} in {persona_resp_elapsed_time} seconds !!")
+
+    total_time_elapsed += persona_resp_elapsed_time
+
+    # Add delay between API calls to avoid rate limiting
+    time.sleep(12)
+
+    return all_user_responses, total_time_elapsed
+
+@flow(name="Simulate Responses")
+def run_response_simulation_agent(personas, select_campaign):
+    """
+    Flow to simulate user responses to email campaigns.
+    
+    Args:
+        personas: User personas object
+        select_campaign: Dictionary containing both email campaigns
+        
+    Returns:
+        responses: List of user responses to the campaigns
+    """
+    # Get logger from Prefect
+    logger = get_run_logger()
+
+
+    # Initialize lists to store responses and track time
+    all_user_responses = []
+    total_time_elapsed = 0
+
+    # Generate responses for each user persona
+    for i, user in enumerate(personas.personas):
+        all_user_responses, total_time_elapsed = get_individual_response(user, 
+                                                                         i, 
+                                                                         select_campaign, 
+                                                                         all_user_responses, 
+                                                                         total_time_elapsed, 
+                                                                         logger)
+
+    # Log completion to Prefect
+    logger.info(f"✅ Response Simulation Agent completed. Generated {len(all_user_responses)} responses.")
+
+    # Convert responses to DataFrame and save to CSV
+    df_responses = display_user_responses(all_user_responses)
+    df_responses.to_csv("df_responses.csv")
+    logger.info(f"responses df saved")
+
+    return all_user_responses
 
 @task(name="Generate Report")
 def run_report_agent(product_input, resp_content, gen_email_campaign_a, gen_email_campaign_b, users_personas, all_user_responses):
@@ -172,7 +235,8 @@ def run_report_agent(product_input, resp_content, gen_email_campaign_a, gen_emai
         gen_email_campaign_a, 
         gen_email_campaign_b, 
         users_personas, 
-        all_user_responses
+        all_user_responses,
+        api_key
     )
 
     # Save report as DOCX file
@@ -188,37 +252,6 @@ def run_report_agent(product_input, resp_content, gen_email_campaign_a, gen_emai
     logger.info(f"✅ Experiment Agent completed in {duration}s. Generated experiment Report.")
     
     return experiment_valuation
-
-@flow(name="Simulate Responses")
-def run_response_simulation_agent(personas, select_campaign):
-    """
-    Flow to simulate user responses to email campaigns.
-    
-    Args:
-        personas: User personas object
-        select_campaign: Dictionary containing both email campaigns
-        
-    Returns:
-        responses: List of user responses to the campaigns
-    """
-    # Get logger from Prefect
-    logger = get_run_logger()
-    
-    # Simulate user responses to email campaigns
-    responses, _ = response_to_email(personas, select_campaign)
-
-    # Log metrics to Weights & Biases
-    wandb.log({"responses_collected": len(responses)})
-
-    # Log completion to Prefect
-    logger.info(f"✅ Response Simulation Agent completed. Generated {len(responses)} responses.")
-
-    # Convert responses to DataFrame and save to CSV
-    df_responses = display_user_responses(responses)
-    df_responses.to_csv("df_responses.csv")
-    logger.info(f"responses df saved")
-
-    return responses
 
 @flow(name="Agentic Experiment Workflow")
 def agentic_experiment_pipeline(product_description: str, num_experiments: int = 1, total_personas: int = 5):
