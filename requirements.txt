@@ -1,6 +1,4 @@
-agno==1.1.3
-google-generativeai
-google-genai
+agno
 streamlit
 pydantic
 python-docx
