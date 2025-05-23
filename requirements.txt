@@ -1,5 +1,6 @@
 agno==1.1.3
+google-generativeai
 streamlit
 pydantic
 python-docx
-prefect
+# prefect
