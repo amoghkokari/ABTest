@@ -1,5 +1,5 @@
 🧪 AI-Driven A/B Testing Platform
-A no-code, end-to-end platform to design, simulate, and analyze A/B testing experiments using Generative AI. Perfect for marketers, product teams, startups, and researchers who want to test ideas quickly — without needing real users or heavy data science work.
+End-To-End platform to design, simulate, and analyze A/B testing experiments using Generative AI. Perfect for marketers, product teams, startups, and researchers who want to test ideas quickly — without needing real users or heavy data science work.
 
 🚀 Features
 -   ✅ Generate A/B testing experiments based on your product description

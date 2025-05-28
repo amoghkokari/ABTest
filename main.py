@@ -21,10 +21,10 @@ def main():
     st.subheader('Run AI-Powered A/B Testing for Your Product, Just Enter a Description and API Key to Begin!')
 
     # Input field for selecting sample population size
-    st.session_state.num_people = st.number_input("Select the number of participants and press enter :", min_value=2, max_value=50, value=6)
+    st.session_state.num_people = st.number_input("Select the number of participants :", min_value=2, max_value=50, value=6)
     
     # Input field for API key
-    api_key = st.text_input('Enter Google Generative AI API KEY (Required)')
+    api_key = st.text_input('Enter Google Generative AI API KEY (Required)', type="password")
     st.link_button("Click to get API KEY (select create api key in new project)", "https://makersuite.google.com/app/apikey", type="secondary")
 
     # Use provided API key or fetch from secrets and set it
