@@ -46,7 +46,9 @@ Others: Pandas, dotenv, io, custom agents using Agno (phiData) for generation an
     -   `cd yourrepo`
 2. Install dependencies
     -   `pip install -r requirements.txt`
-3. Create `.env` file to save keys (optional)
+3. Create `.streamlit/secrets.toml` file to save keys 
+    -   GEMINI_API='<\your api key if you want\>'
+    -   GEMINI_VERSION='should be current model version' eg 'gemini-2.0-flash-001'
 4. Run the app
     -   `streamlit run main.py`
 5. To run the workflow:
