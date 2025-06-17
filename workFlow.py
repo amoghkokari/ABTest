@@ -6,16 +6,13 @@ from agents.response_simulator.Agent import response_to_email
 from agents.response_evaluator.Agent import evaluate_experiment
 from agents.response_simulator.Agent import response_to_email
 from agents.persona_generator.Agent import generate_personas
+from llm_models.AgnoAgentModels import set_api_key
 from prefect import task, flow, get_run_logger
 from argparse import ArgumentParser
-from dotenv import load_dotenv
-import wandb
 import time
 import os
 
-# Load environment variables from .env file
-load_dotenv()
-api_key = os.environ.get('GEMINI_API')
+api_key = set_api_key("")
 
 @task(name="Generate Experiments")
 def run_experiment_agent(num_experiments: int, product_description: str):
@@ -40,9 +37,6 @@ def run_experiment_agent(num_experiments: int, product_description: str):
     
     # Calculate duration
     duration = round(time.time() - start_time, 2)
-
-    # Log metrics to Weights & Biases
-    wandb.log({"experiment_id": experiments.experiment_id, "execution_time": duration})
 
     # Log completion to Prefect
     logger.info(f"✅ Experiment Agent completed in {duration}s. Generated {experiments.experiment_id} experiment.")
@@ -84,9 +78,6 @@ def run_email_campaign_agent(experiments):
         "target_audience": email_campaign_b.target_audience
     }
 
-    # Log campaign details to Weights & Biases
-    wandb.log({"email_campaign_a": Campaign_A, "email_campaign_b": Campaign_B})
-
     # Log completion and campaign details to Prefect
     logger.info("✅ Email Campaign Agent completed.")
     logger.info(f"Generated campaigns for campaign a : {Campaign_A}")
@@ -117,9 +108,6 @@ def run_persona_agent(email_campaign_a, email_campaign_b, n_participants):
     
     # Generate personas based on target audiences of both campaigns
     personas = generate_personas(email_campaign_a, email_campaign_b, n_participants, api_key)
-
-    # Log metrics to Weights & Biases
-    wandb.log({"personas_generated": len(personas.personas)})
 
     # Log completion to Prefect
     logger.info(f"✅ Persona Agent completed. Generated {len(personas.personas)} personas.")
@@ -245,9 +233,6 @@ def run_report_agent(product_input, resp_content, gen_email_campaign_a, gen_emai
     # Calculate duration
     duration = round(time.time() - start_time, 2)
 
-    # Log metrics to Weights & Biases
-    wandb.log({"experiment_Valuation execution_time": duration})
-
     # Log completion to Prefect
     logger.info(f"✅ Experiment Agent completed in {duration}s. Generated experiment Report.")
     
@@ -288,10 +273,6 @@ def agentic_experiment_pipeline(product_description: str, num_experiments: int =
     logger.info("✅ Experiment Workflow Completed Successfully, Reports and file present in execution directory!")
 
 if __name__ == "__main__":
-    # Initialize Weights & Biases logging
-    wandb.login(key=os.environ.get('WANDB_API'))
-    wandb.init(project="agentic_experiment", job_type="experiment_tracking")
-
     # Set up command line argument parser
     parser = ArgumentParser(description="Run workflow with optional number of personas.")
     parser.add_argument('--personas', type=int, default=5, help='Number of personas to use (default: 5)')
@@ -301,6 +282,3 @@ if __name__ == "__main__":
 
     # Run the main workflow pipeline with parsed arguments
     agentic_experiment_pipeline(product_description(), num_experiments=1, total_personas=args.personas)
-    
-    # Finish Weights & Biases logging
-    wandb.finish()
