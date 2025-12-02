@@ -1,17 +1,22 @@
-from docx import Document
-import pandas as pd
 import re
+import pandas as pd
+import streamlit as st
+from docx import Document
+from docx.shared import Inches
+from docx.enum.text import WD_ALIGN_PARAGRAPH
+from datetime import datetime
 
 def  display_email_campaigns(gen_email_campaign_a, gen_email_campaign_b):
     if gen_email_campaign_a and gen_email_campaign_b:
         # Create a dictionary to format data into a table
         data = {
-            "Attribute": ["Variant", "Subject", "Body", "Tone", "Target Audience"],
+            "Attribute": ["Variant", "Subject", "Body", "Tone", "Call-to-Action (CTA)", "Target Audience"],
             "Campaign A": [
                 gen_email_campaign_a.variant,
                 gen_email_campaign_a.subject,
                 gen_email_campaign_a.body,
                 gen_email_campaign_a.tone,
+                gen_email_campaign_a.call_to_action,
                 gen_email_campaign_a.target_audience
             ],
             "Campaign B": [
@@ -19,6 +24,7 @@ def  display_email_campaigns(gen_email_campaign_a, gen_email_campaign_b):
                 gen_email_campaign_b.subject,
                 gen_email_campaign_b.body,
                 gen_email_campaign_b.tone,
+                gen_email_campaign_b.call_to_action,
                 gen_email_campaign_b.target_audience
             ],
         }
@@ -75,54 +81,170 @@ def display_user_responses(responses):
 
 def save_as_docx(dct_text, filename, isWF=False):
     doc = Document()
-    doc.add_heading("AB Test Report", level=1)
+    
+    # -----------------------------------------------------------------
+    # Helper function to process text (handles markdown, lists, and bold)
+    # -----------------------------------------------------------------
+    def add_formatted_content(doc_object, content, style=None):
+        # 1. Split content by double newline to treat as distinct blocks/paragraphs
+        blocks = content.split('\n\n')
+        
+        for block in blocks:
+            block = block.strip()
+            if not block:
+                continue
+                
+            # 2. Check for bullet points (-, *, or •)
+            if re.match(r'^\s*[-*•]\s', block, re.MULTILINE):
+                # Process lists line by line
+                list_lines = block.split('\n')
+                for line in list_lines:
+                    line = line.strip()
+                    if re.match(r'^\s*[-*•]\s', line):
+                        # Add as a bulleted list item, stripping the marker
+                        doc_object.add_paragraph(
+                            re.sub(r'^\s*[-*•]\s', '', line), 
+                            style='List Bullet'
+                        )
+                    else:
+                        # Add subsequent non-list lines in the same block as regular text
+                        add_formatted_content(doc_object, line)
+            
+            # 3. Check for simple numbered lists (e.g., '1.', '2.)')
+            elif re.match(r'^\s*\d+[\.\)]\s', block, re.MULTILINE):
+                list_lines = block.split('\n')
+                for line in list_lines:
+                    line = line.strip()
+                    if re.match(r'^\s*\d+[\.\)]\s', line):
+                        # Add as a numbered list item, stripping the marker
+                        doc_object.add_paragraph(
+                            re.sub(r'^\s*\d+[\.\)]\s', '', line), 
+                            style='List Number'
+                        )
+                    else:
+                        add_formatted_content(doc_object, line)
+                        
+            # 4. If not a list, treat as a regular paragraph and check for bolding
+            else:
+                p = doc_object.add_paragraph('', style=style)
+                
+                # Split by ** to find bolded sections
+                parts = re.split(r'(\*\*.*?\*\*)', block)
+                for part in parts:
+                    if part.startswith('**') and part.endswith('**'):
+                        # Add run with bold style
+                        p.add_run(part.strip('**')).bold = True
+                    else:
+                        # Add run with normal style
+                        p.add_run(part)
 
-    doc.add_heading("Introduction", level=2)
-    para = dct_text.Introduction.replace('\n', ' ')
-    para = re.sub(' +', ' ', para)
-    doc.add_paragraph(para)
+    # -----------------------------------------------------------------
+    # REPORT STRUCTURE
+    # -----------------------------------------------------------------
+    
+    # Title Page/Header
+    doc.add_heading("A/B Test Report", level=0).alignment = WD_ALIGN_PARAGRAPH.CENTER
+    doc.add_heading(" Email Campaign Analysis", level=1).alignment = WD_ALIGN_PARAGRAPH.CENTER
+    doc.add_paragraph(f"Report Date: {datetime.now().strftime('%Y-%m-%d')}").alignment = WD_ALIGN_PARAGRAPH.CENTER
+    doc.add_page_break()
+    
+    # Map sections and titles
+    sections = [
+        ("1. Introduction", dct_text.Introduction),
+        ("2. Experiment Process (Deep Dive)", dct_text.Experiment_process),
+        ("3. Email Campaign Analysis (A vs. B)", dct_text.Email_Campaign_Analysis),
+        ("4. User Persona Analysis & Segmentation", dct_text.User_Persona_Analysis),
+        ("5. User Response Analysis (Qualitative)", dct_text.User_Response_Analysis),
+        ("6. Performance Metrics Breakdown", dct_text.Performance_Metrics),
+        ("7. Interpretations & Business Implications", dct_text.Interpretations),
+        ("8. Recommendations for Next Steps", dct_text.Recommendations),
+        ("9. Conclusion", dct_text.Conclusion)
+    ]
 
-    doc.add_heading("Experiment Deep Dive", level=2)
-    para = dct_text.Experiment_process.replace('\n', ' ')
-    para = re.sub(' +', ' ', para)
-    doc.add_paragraph(para)
-
-    doc.add_heading("Email Campaign Analysis", level=2)
-    para = dct_text.Email_Campaign_Analysis.replace('\n', ' ')
-    para = re.sub(' +', ' ', para)
-    doc.add_paragraph(para)
-
-    doc.add_heading("User Persona Analysis", level=2)
-    para = dct_text.User_Persona_Analysis.replace('\n', ' ')
-    para = re.sub(' +', ' ', para)
-    doc.add_paragraph(para)
-
-    doc.add_heading("User Response Analysis", level=2)
-    para = dct_text.User_Response_Analysis.replace('\n', ' ')
-    para = re.sub(' +', ' ', para)
-    doc.add_paragraph(para)
-
-    doc.add_heading("Performance Metrics", level=2)
-    para = dct_text.Performance_Metrics.replace('\n', ' ')
-    para = re.sub(' +', ' ', para)
-    doc.add_paragraph(para)
-
-    doc.add_heading("Interpretations", level=2)
-    para = dct_text.Interpretations.replace('\n', ' ')
-    para = re.sub(' +', ' ', para)
-    doc.add_paragraph(para)
-
-    doc.add_heading("Recommendations", level=2)
-    para = dct_text.Recommendations.replace('\n', ' ')
-    para = re.sub(' +', ' ', para)
-    doc.add_paragraph(para)
-
-    doc.add_heading("Conclusion", level=2)
-    para = dct_text.Conclusion.replace('\n', ' ')
-    para = re.sub(' +', ' ', para)
-    doc.add_paragraph(para)
+    for title, content in sections:
+        doc.add_heading(title, level=2)
+        add_formatted_content(doc, content)
+        doc.add_page_break() # Ensures each section starts on a new page
 
     if isWF:
         doc.save(filename)
 
     return doc
+
+# def save_as_docx(dct_text, filename, isWF=False):
+#     doc = Document()
+#     doc.add_heading("AB Test Report", level=1)
+
+#     doc.add_heading("Introduction", level=2)
+#     para = dct_text.Introduction.replace('\n', ' ')
+#     para = re.sub(' +', ' ', para)
+#     doc.add_paragraph(para)
+
+#     doc.add_heading("Experiment Deep Dive", level=2)
+#     para = dct_text.Experiment_process.replace('\n', ' ')
+#     para = re.sub(' +', ' ', para)
+#     doc.add_paragraph(para)
+
+#     doc.add_heading("Email Campaign Analysis", level=2)
+#     para = dct_text.Email_Campaign_Analysis.replace('\n', ' ')
+#     para = re.sub(' +', ' ', para)
+#     doc.add_paragraph(para)
+
+#     doc.add_heading("User Persona Analysis", level=2)
+#     para = dct_text.User_Persona_Analysis.replace('\n', ' ')
+#     para = re.sub(' +', ' ', para)
+#     doc.add_paragraph(para)
+
+#     doc.add_heading("User Response Analysis", level=2)
+#     para = dct_text.User_Response_Analysis.replace('\n', ' ')
+#     para = re.sub(' +', ' ', para)
+#     doc.add_paragraph(para)
+
+#     doc.add_heading("Performance Metrics", level=2)
+#     para = dct_text.Performance_Metrics.replace('\n', ' ')
+#     para = re.sub(' +', ' ', para)
+#     doc.add_paragraph(para)
+
+#     doc.add_heading("Interpretations", level=2)
+#     para = dct_text.Interpretations.replace('\n', ' ')
+#     para = re.sub(' +', ' ', para)
+#     doc.add_paragraph(para)
+
+#     doc.add_heading("Recommendations", level=2)
+#     para = dct_text.Recommendations.replace('\n', ' ')
+#     para = re.sub(' +', ' ', para)
+#     doc.add_paragraph(para)
+
+#     doc.add_heading("Conclusion", level=2)
+#     para = dct_text.Conclusion.replace('\n', ' ')
+#     para = re.sub(' +', ' ', para)
+#     doc.add_paragraph(para)
+
+#     if isWF:
+#         doc.save(filename)
+
+#     return doc
+
+
+def display_experiment(response):
+    # Create a clean container for the experiment
+    with st.container():
+        # 1. Header with ID
+        st.subheader(f"🧪 Experiment ID: {response.experiment_id}")
+    
+        # 2. Product Description in an info box or expander to save space
+        with st.expander("📄 View Product Description", expanded=True):
+            st.markdown(response.product_description)
+
+        st.markdown("---") # Horizontal line separator
+
+        # 3. Experiment Guidelines with clear hierarchy
+        st.markdown("### 📋 Experiment Guidelines")
+    
+        # Use a colored box or just clean markdown for the guidelines
+        st.markdown(response.experiment_guidelines)
+
+        # Optional: Add a divider if you are looping through multiple experiments
+        st.divider()
+    
+    return

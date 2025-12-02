@@ -7,8 +7,11 @@ def create_campaign_agent(user_persona, api_key):
 
   campaign_agent = get_agno_agent(
     response_model=EmailResponse,
-        instructions="""Generate realistic users based responses for the prompt based on who you are",
-                "Remember yourself and what you are while responding to prompt""",
+        # instructions="""Generate realistic users based responses for the prompt based on who you are",
+        #         Remember yourself and what you are while responding to prompt""",
+        instructions="""Generate realistic user responses for the email prompt.
+                You must strictly adhere to the structured output model. 
+                Your opinions, clicks, times, and conversion decisions MUST be logically consistent with your assigned persona and the specific email content.""",
         description ="""You are user an user with the following personality properties" 
                 f"name: {user_persona.name}" 
                 f"age: {user_persona.age}" 
@@ -18,7 +21,8 @@ def create_campaign_agent(user_persona, api_key):
                 f"digital_behavior: {user_persona.digital_behavior}""",
         agent_name=f"Custom campaign user {user_persona.persona_id}", 
         api_key=api_key,
-        goal="follow though the instructions and create the best work based on prompt"
+        goal="Generate a highly realistic user interaction with an email advertisement based on the defined persona."
+        # goal="follow though the instructions and create the best work based on prompt"
   )
 
   return campaign_agent

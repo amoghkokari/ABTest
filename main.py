@@ -1,4 +1,4 @@
-from helper_func import display_email_campaigns, display_user_personas, display_user_responses, save_as_docx
+from helper_func import display_email_campaigns, display_user_personas, display_user_responses, save_as_docx, display_experiment
 from agents.email_generator.Agent import generate_email_campaigns_for_experiment
 from agents.experiment_generator.Agent import generate_experiments
 from agents.response_evaluator.Agent import evaluate_experiment
@@ -85,11 +85,8 @@ def main():
             status.update(
                 label="Response completed !", state="complete", expanded=False
             )
-    
-        # Display experiment details
-        st.markdown(st.session_state.resp_content.experiment_id)
-        st.markdown(st.session_state.resp_content.product_description)
-        st.markdown(st.session_state.resp_content.experiment_guidelines)
+
+        display_experiment(st.session_state.resp_content)
 
         # Allow editing of experiment guidelines
         if st.session_state.resp_content:
@@ -124,18 +121,19 @@ def main():
         # Display email campaigns in a dataframe
         df_email = display_email_campaigns(st.session_state.gen_email_campaign_a, st.session_state.gen_email_campaign_b)
 
+        # Display email table in Streamlit
+        st.subheader("AB Test Email Campaigns")
+        st.dataframe(df_email[df_email["Attribute"]!="Body"].reset_index(drop=True))
+        st.table(df_email[df_email["Attribute"]=="Body"].drop("Attribute", axis = 1).reset_index(drop=True))
+
         # Allow editing of email campaign details
         if st.session_state.gen_email_campaign_a and st.session_state.gen_email_campaign_b:
 
             st.session_state.gen_email_campaign_a.variant = st.text_area("Edit campaign A agent response if needed:", 
-                                                                         value=st.session_state.resp_content.experiment_guidelines)
+                                                                         value=st.session_state.gen_email_campaign_a)
 
             st.session_state.gen_email_campaign_b.variant = st.text_area("Edit campaign B agent response if needed:", 
-                                                                         value=st.session_state.resp_content.experiment_guidelines)
-
-        # Display email table in Streamlit
-        st.subheader("AB Test Email Campaigns")
-        st.dataframe(df_email)
+                                                                         value=st.session_state.gen_email_campaign_b)
 
         # Provide download option for email campaigns
         st.download_button(
@@ -268,14 +266,47 @@ def main():
 
         # Display sections of the experiment report
         st.subheader("AB Test Experiment Report")
+
+        st.markdown("## 📖 1. Introduction")
         st.markdown(st.session_state.experiment_valuation.Introduction)
-        st.markdown(st.session_state.experiment_valuation.Experiment_process)
-        st.markdown(st.session_state.experiment_valuation.Email_Campaign_Analysis)
-        st.markdown(st.session_state.experiment_valuation.User_Persona_Analysis)
-        st.markdown(st.session_state.experiment_valuation.User_Response_Analysis)
+
+        st.markdown("## 🛠️ 2. Experiment Process")
+        with st.expander("View Detailed Steps", expanded=False):
+            st.markdown(st.session_state.experiment_valuation.Experiment_process)
+        
+        st.markdown("---")
+        st.markdown("## 🧠 Analysis: Campaigns and Personas")
+        tab_campaign, tab_persona = st.tabs(["Email Campaign Analysis", "User Persona & Response"])
+        with tab_campaign:
+            st.markdown("### 📧 Email Campaign Analysis (A vs. B)")
+            st.markdown(st.session_state.experiment_valuation.Email_Campaign_Analysis)
+
+        with tab_persona:
+            st.markdown("### 👤 User Persona Analysis & Segmentation")
+            st.markdown(st.session_state.experiment_valuation.User_Persona_Analysis)
+            st.markdown("---")
+            st.markdown("### 💬 User Response Analysis (Qualitative)")
+            st.markdown(st.session_state.experiment_valuation.User_Response_Analysis)
+
+        # st.markdown(st.session_state.experiment_valuation.Email_Campaign_Analysis)
+        # st.markdown(st.session_state.experiment_valuation.User_Persona_Analysis)
+        # st.markdown(st.session_state.experiment_valuation.User_Response_Analysis)
+        st.markdown("---")
+        st.markdown("## 📈 3. Performance Metrics Breakdown")
         st.markdown(st.session_state.experiment_valuation.Performance_Metrics)
+
+        st.markdown("---")
+        st.markdown("## ✨ 4. Interpretations and Next Steps")
+        st.markdown("### 🔍 Interpreting the Results & Business Implications")
         st.markdown(st.session_state.experiment_valuation.Interpretations)
+
+        st.divider()
+
+        st.markdown("### ✅ Recommendations for Next Steps")
         st.markdown(st.session_state.experiment_valuation.Recommendations)
+
+        st.markdown("---")
+        st.markdown("## 💡 Conclusion")
         st.markdown(st.session_state.experiment_valuation.Conclusion)
     
     # STEP 6: Save AB Test Report as DOCX
