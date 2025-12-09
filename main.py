@@ -288,9 +288,6 @@ def main():
             st.markdown("### 💬 User Response Analysis (Qualitative)")
             st.markdown(st.session_state.experiment_valuation.User_Response_Analysis)
 
-        # st.markdown(st.session_state.experiment_valuation.Email_Campaign_Analysis)
-        # st.markdown(st.session_state.experiment_valuation.User_Persona_Analysis)
-        # st.markdown(st.session_state.experiment_valuation.User_Response_Analysis)
         st.markdown("---")
         st.markdown("## 📈 3. Performance Metrics Breakdown")
         st.markdown(st.session_state.experiment_valuation.Performance_Metrics)

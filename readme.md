@@ -42,13 +42,13 @@ Others: Pandas, dotenv, io, custom agents using Agno (phiData) for generation an
 
 🔑 Getting Started
 1. Clone the repository
-    -   `git clone https://github.com/yourusername/yourrepo.git`
-    -   `cd yourrepo`
+    -   `git clone https://github.com/amoghkokari/ABTest.git`
+    -   `cd ABTest`
 2. Install dependencies
     -   `pip install -r requirements.txt`
 3. Create `.streamlit/secrets.toml` file to save keys 
     -   GEMINI_API='<\your api key if you want\>'
-    -   GEMINI_VERSION='should be current model version' eg 'gemini-2.0-flash-001'
+    -   GEMINI_VERSION='should be current model version' eg 'gemini-2.5-flash'
 4. Run the app
     -   `streamlit run main.py`
 5. To run the workflow:
