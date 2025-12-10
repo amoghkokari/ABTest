@@ -171,80 +171,16 @@ def save_as_docx(dct_text, filename, isWF=False):
 
     return doc
 
-# def save_as_docx(dct_text, filename, isWF=False):
-#     doc = Document()
-#     doc.add_heading("AB Test Report", level=1)
-
-#     doc.add_heading("Introduction", level=2)
-#     para = dct_text.Introduction.replace('\n', ' ')
-#     para = re.sub(' +', ' ', para)
-#     doc.add_paragraph(para)
-
-#     doc.add_heading("Experiment Deep Dive", level=2)
-#     para = dct_text.Experiment_process.replace('\n', ' ')
-#     para = re.sub(' +', ' ', para)
-#     doc.add_paragraph(para)
-
-#     doc.add_heading("Email Campaign Analysis", level=2)
-#     para = dct_text.Email_Campaign_Analysis.replace('\n', ' ')
-#     para = re.sub(' +', ' ', para)
-#     doc.add_paragraph(para)
-
-#     doc.add_heading("User Persona Analysis", level=2)
-#     para = dct_text.User_Persona_Analysis.replace('\n', ' ')
-#     para = re.sub(' +', ' ', para)
-#     doc.add_paragraph(para)
-
-#     doc.add_heading("User Response Analysis", level=2)
-#     para = dct_text.User_Response_Analysis.replace('\n', ' ')
-#     para = re.sub(' +', ' ', para)
-#     doc.add_paragraph(para)
-
-#     doc.add_heading("Performance Metrics", level=2)
-#     para = dct_text.Performance_Metrics.replace('\n', ' ')
-#     para = re.sub(' +', ' ', para)
-#     doc.add_paragraph(para)
-
-#     doc.add_heading("Interpretations", level=2)
-#     para = dct_text.Interpretations.replace('\n', ' ')
-#     para = re.sub(' +', ' ', para)
-#     doc.add_paragraph(para)
-
-#     doc.add_heading("Recommendations", level=2)
-#     para = dct_text.Recommendations.replace('\n', ' ')
-#     para = re.sub(' +', ' ', para)
-#     doc.add_paragraph(para)
-
-#     doc.add_heading("Conclusion", level=2)
-#     para = dct_text.Conclusion.replace('\n', ' ')
-#     para = re.sub(' +', ' ', para)
-#     doc.add_paragraph(para)
-
-#     if isWF:
-#         doc.save(filename)
-
-#     return doc
-
-
 def display_experiment(response):
     # Create a clean container for the experiment
-    with st.container():
+    with st.container(height=350):
         # 1. Header with ID
         st.subheader(f"🧪 Experiment ID: {response.experiment_id}")
-    
-        # 2. Product Description in an info box or expander to save space
-        with st.expander("📄 View Product Description", expanded=True):
-            st.markdown(response.product_description)
-
-        st.markdown("---") # Horizontal line separator
 
         # 3. Experiment Guidelines with clear hierarchy
         st.markdown("### 📋 Experiment Guidelines")
     
         # Use a colored box or just clean markdown for the guidelines
         st.markdown(response.experiment_guidelines)
-
-        # Optional: Add a divider if you are looping through multiple experiments
-        st.divider()
     
     return

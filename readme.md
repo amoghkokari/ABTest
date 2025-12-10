@@ -48,7 +48,7 @@ Others: Pandas, dotenv, io, custom agents using Agno (phiData) for generation an
     -   `pip install -r requirements.txt`
 3. Create `.streamlit/secrets.toml` file to save keys 
     -   GEMINI_API='<\your api key if you want\>'
-    -   GEMINI_VERSION='should be current model version' eg 'gemini-2.5-flash'
+    -   GEMINI_VERSION='should be current model version' eg 'gemini-robotics-er-1.5-preview'
 4. Run the app
     -   `streamlit run main.py`
 5. To run the workflow:
