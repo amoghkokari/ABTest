@@ -12,11 +12,32 @@ import io
 
 def main():
     st.set_page_config(layout="wide")
-    """
-    Main function that runs the Streamlit application for AI-Driven A/B Testing.
-    This application allows users to conduct AI-powered A/B testing by entering
-    a product description and API key.
-    """
+
+    # Place this section immediately after st.set_page_config(layout="wide")
+    with st.sidebar:
+        st.markdown("""
+        # What is AI-Driven A/B Testing?
+        This application is a **virtual market researcher** that uses Google's Generative AI to simulate a real-world A/B test in seconds, giving you fast, data-driven decisions without needing real customers. 
+
+        ### 1. The Setup: Defining the Test
+        You provide a product description. The AI creates a **Hypothesis** (an educated guess about what will work best) and outlines the test goals and the target customer group.
+
+        ### 2. The Creative: Campaigns A vs. B
+        Based on the goals, the AI writes two different versions of an email campaign: **Version A** and **Version B**. This is the core of the test—two different approaches to see which performs better.
+
+        ### 3. The Audience: Creating Virtual Testers
+        The AI generates a population of **User Personas** (detailed, fictional customer profiles) who perfectly match your target audience. These are your virtual test participants.
+
+        ### 4. The Simulation: Getting Responses
+        Each virtual **User Persona** "receives" one of the emails (A or B). The AI simulates how that specific persona would realistically **respond** (e.g., *Would they click? Would they ignore it?*).
+
+        ### 5. The Analysis: The Final Report
+        The AI collects all the virtual responses, calculates the performance (like the click-through rate for A vs. B), and generates a detailed **Report**. This report tells you **which version won** and, more importantly, **why**.
+
+        ### 6. The Outcome: Final Download
+        Download the complete A/B Test Report as a Word (DOCX) file, ready to share with your team.
+        """)
+
     # App framework setup
     st.title('AI-Driven A/B Testing for Smarter Decision Making')
     st.subheader('Run AI-Powered A/B Testing for Your Product, Just Enter a Description and API Key to Begin!')
